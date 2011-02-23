@@ -2652,6 +2652,7 @@ void cpu_register_physical_memory_log(target_phys_addr_t start_addr,
             CHECK_SUBPAGE(addr, start_addr, start_addr2, end_addr, end_addr2,
                           need_subpage);
             if (need_subpage) {
+                region_offset -= (start_addr & ~TARGET_PAGE_MASK);
                 if (!(orig_memory & IO_MEM_SUBPAGE)) {
                     subpage = subpage_init((addr & TARGET_PAGE_MASK),
                                            &p->phys_offset, orig_memory,
@@ -2684,6 +2685,7 @@ void cpu_register_physical_memory_log(target_phys_addr_t start_addr,
                               end_addr2, need_subpage);
 
                 if (need_subpage) {
+                    region_offset -= (start_addr & ~TARGET_PAGE_MASK);
                     subpage = subpage_init((addr & TARGET_PAGE_MASK),
                                            &p->phys_offset, IO_MEM_UNASSIGNED,
                                            addr & TARGET_PAGE_MASK);
