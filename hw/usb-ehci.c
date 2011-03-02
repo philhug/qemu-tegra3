@@ -30,6 +30,7 @@
 #include "usb.h"
 #include "pci.h"
 #include "monitor.h"
+#include "sysbus.h"
 
 #define EHCI_DEBUG   0
 #define STATE_DEBUG  0       /* state transitions  */
@@ -52,7 +53,7 @@
 #define MMIO_SIZE        0x1000
 
 /* Capability Registers Base Address - section 2.2 */
-#define CAPREGBASE       0x0000
+#define CAPREGBASE       0x0100
 #define CAPLENGTH        CAPREGBASE + 0x0000  // 1-byte, 0x0001 reserved
 #define HCIVERSION       CAPREGBASE + 0x0002  // 2-bytes, i/f version #
 #define HCSPARAMS        CAPREGBASE + 0x0004  // 4-bytes, structural params
@@ -61,7 +62,7 @@
 #define HCSPPORTROUTE1   CAPREGBASE + 0x000c
 #define HCSPPORTROUTE2   CAPREGBASE + 0x0010
 
-#define OPREGBASE        0x0020        // Operational Registers Base Address
+#define OPREGBASE        0x0140        // Operational Registers Base Address
 
 #define USBCMD           OPREGBASE + 0x0000
 #define USBCMD_RUNSTOP   (1 << 0)      // run / Stop
@@ -112,7 +113,7 @@
  * Bits that are reserverd or are read-only are masked out of values
  * written to us by software
  */
-#define PORTSC_RO_MASK       0x007021c5
+#define PORTSC_RO_MASK       0x007031c5
 #define PORTSC_RWC_MASK      0x0000002a
 #define PORTSC_WKOC_E        (1 << 22)    // Wake on Over Current Enable
 #define PORTSC_WKDS_E        (1 << 21)    // Wake on Disconnect Enable
@@ -341,7 +342,7 @@ typedef struct EHCIfstn {
 } EHCIfstn;
 
 typedef struct {
-    PCIDevice dev;
+    SysBusDevice busdev;
     qemu_irq irq;
     target_phys_addr_t mem_base;
     int mem;
@@ -523,12 +524,9 @@ static void ehci_detach(USBPort *port)
 static void ehci_reset(void *opaque)
 {
     EHCIState *s = opaque;
-    uint8_t *pci_conf;
     int i;
 
-    pci_conf = s->dev.config;
-
-    memset(&s->mmio[OPREGBASE], 0x00, MMIO_SIZE - OPREGBASE);
+    memset(&s->mmio[OPREGBASE], 0x00, 0x400/*MMIO_SIZE*/ - OPREGBASE);
 
     s->usbcmd = NB_MAXINTRATE << USBCMD_ITC_SH;
     s->usbsts = USBSTS_HALT;
@@ -635,6 +633,14 @@ static void handle_port_status_write(EHCIState *s, int port, uint32_t val)
         val |= PORTSC_PED;
         val |= PORTSC_PEDC;
     }
+    if ((val & PORTSC_PPOWER) && !(*portsc & PORTSC_PPOWER)) {
+        /* TODO iff Port Power Control (PPC) field == 1 in HCSPARAMS */
+        DPRINTF("port_status_write: Port %d Resume power\n", port);
+        val |= PORTSC_PED;
+        val |= PORTSC_PEDC;
+        val |= PORTSC_CONNECT;
+        val |= PORTSC_CSC;
+    }
 
     *portsc &= ~PORTSC_RO_MASK;
     *portsc |= val;
@@ -662,7 +668,7 @@ static void ehci_mem_writel(void *ptr, target_phys_addr_t addr, uint32_t val)
     }
 
     if (addr < OPREGBASE) {
-        fprintf(stderr, "usb-ehci: write attempt to read-only register"
+        fprintf(stderr, "usb-ehci: write attempt to read-only register "
                 TARGET_FMT_plx "\n", addr);
         return;
     }
@@ -1523,6 +1529,7 @@ static int ehci_state_execute(EHCIState *ehci, int async, int *state)
     // TODO write back ptr to async list when done or out of time
     // TODO Windows does not seem to ever set the MULT field
 
+#if 0 /* Tegra EHCI controller also handle non USB2.0 devices */
     if (!async) {
         int transactCtr = get_field(qh->epcap, QH_EPCAP_MULT);
         if (!transactCtr) {
@@ -1532,6 +1539,7 @@ static int ehci_state_execute(EHCIState *ehci, int async, int *state)
             goto out;
         }
     }
+#endif
 
     if (async) {
         ehci->usbsts |= USBSTS_REC;
@@ -1922,18 +1930,7 @@ static CPUWriteMemoryFunc *ehci_writefn[3]={
     ehci_mem_writel
 };
 
-static void ehci_map(PCIDevice *pci_dev, int region_num,
-                     pcibus_t addr, pcibus_t size, int type)
-{
-    EHCIState *s =(EHCIState *)pci_dev;
-
-    DPRINTF("ehci_map: region %d, addr %08" PRIx64 ", size %" PRId64 ", s->mem %08X\n",
-            region_num, addr, size, s->mem);
-    s->mem_base = addr;
-    cpu_register_physical_memory(addr, size, s->mem);
-}
-
-static int usb_ehci_initfn(PCIDevice *dev);
+static int usb_ehci_initfn(SysBusDevice *dev);
 
 static USBPortOps ehci_port_ops = {
     .attach = ehci_attach,
@@ -1941,69 +1938,20 @@ static USBPortOps ehci_port_ops = {
     .complete = ehci_async_complete_packet,
 };
 
-static PCIDeviceInfo ehci_info = {
+static SysBusDeviceInfo ehci_info = {
     .qdev.name    = "usb-ehci",
     .qdev.size    = sizeof(EHCIState),
     .init         = usb_ehci_initfn,
 };
 
-static int usb_ehci_initfn(PCIDevice *dev)
+static int usb_ehci_initfn(SysBusDevice *dev)
 {
-    EHCIState *s = DO_UPCAST(EHCIState, dev, dev);
-    uint8_t *pci_conf = s->dev.config;
+    EHCIState *s = FROM_SYSBUS(EHCIState, dev);
     int i;
 
-    pci_config_set_vendor_id(pci_conf, PCI_VENDOR_ID_INTEL);
-    pci_config_set_device_id(pci_conf, PCI_DEVICE_ID_INTEL_82801D);
-    pci_set_byte(&pci_conf[PCI_REVISION_ID], 0x10);
-    pci_set_byte(&pci_conf[PCI_CLASS_PROG], 0x20);
-    pci_config_set_class(pci_conf, PCI_CLASS_SERIAL_USB);
-    pci_set_byte(&pci_conf[PCI_HEADER_TYPE], PCI_HEADER_TYPE_NORMAL);
+    sysbus_init_irq(dev, &s->irq);
 
-    /* capabilities pointer */
-    pci_set_byte(&pci_conf[PCI_CAPABILITY_LIST], 0x00);
-    //pci_set_byte(&pci_conf[PCI_CAPABILITY_LIST], 0x50);
-
-    pci_set_byte(&pci_conf[PCI_INTERRUPT_PIN], 4); // interrupt pin 3
-    pci_set_byte(&pci_conf[PCI_MIN_GNT], 0);
-    pci_set_byte(&pci_conf[PCI_MAX_LAT], 0);
-
-    // pci_conf[0x50] = 0x01; // power management caps
-
-    pci_set_byte(&pci_conf[0x60], 0x20);  // spec release number (2.1.4)
-    pci_set_byte(&pci_conf[0x61], 0x20);  // frame length adjustment (2.1.5)
-    pci_set_word(&pci_conf[0x62], 0x00);  // port wake up capability (2.1.6)
-
-    pci_conf[0x64] = 0x00;
-    pci_conf[0x65] = 0x00;
-    pci_conf[0x66] = 0x00;
-    pci_conf[0x67] = 0x00;
-    pci_conf[0x68] = 0x01;
-    pci_conf[0x69] = 0x00;
-    pci_conf[0x6a] = 0x00;
-    pci_conf[0x6b] = 0x00;  // USBLEGSUP
-    pci_conf[0x6c] = 0x00;
-    pci_conf[0x6d] = 0x00;
-    pci_conf[0x6e] = 0x00;
-    pci_conf[0x6f] = 0xc0;  // USBLEFCTLSTS
-
-    // 2.2 host controller interface version
-    s->mmio[0x00] = (uint8_t) OPREGBASE;
-    s->mmio[0x01] = 0x00;
-    s->mmio[0x02] = 0x00;
-    s->mmio[0x03] = 0x01;        // HC version
-    s->mmio[0x04] = NB_PORTS;    // Number of downstream ports
-    s->mmio[0x05] = 0x00;        // No companion ports at present
-    s->mmio[0x06] = 0x00;
-    s->mmio[0x07] = 0x00;
-    s->mmio[0x08] = 0x80;        // We can cache whole frame, not 64-bit capable
-    s->mmio[0x09] = 0x68;        // EECP
-    s->mmio[0x0a] = 0x00;
-    s->mmio[0x0b] = 0x00;
-
-    s->irq = s->dev.irq[3];
-
-    usb_bus_new(&s->bus, &s->dev.qdev);
+    usb_bus_new(&s->bus, &s->busdev.qdev);
     for(i = 0; i < NB_PORTS; i++) {
         usb_register_port(&s->bus, &s->ports[i], s, i, &ehci_port_ops,
                           USB_SPEED_MASK_HIGH);
@@ -2018,17 +1966,32 @@ static int usb_ehci_initfn(PCIDevice *dev)
     s->mem = cpu_register_io_memory(ehci_readfn, ehci_writefn, s,
                                     DEVICE_LITTLE_ENDIAN);
 
-    pci_register_bar(&s->dev, 0, MMIO_SIZE, PCI_BASE_ADDRESS_SPACE_MEMORY,
-                                                            ehci_map);
+    sysbus_init_mmio(dev, MMIO_SIZE, s->mem);
 
-    fprintf(stderr, "*** EHCI support is under development ***\n");
+    // 2.2 host controller interface version
+    s->mmio[CAPREGBASE + 0x00] = (uint8_t) (OPREGBASE - CAPREGBASE);
+    s->mmio[CAPREGBASE + 0x01] = 0x00;
+    s->mmio[CAPREGBASE + 0x02] = 0x00;
+    s->mmio[CAPREGBASE + 0x03] = 0x01;        // HC version
+    s->mmio[CAPREGBASE + 0x04] = NB_PORTS;    // Number of downstream ports
+    s->mmio[CAPREGBASE + 0x05] = 0x00;        // No companion ports at present
+    s->mmio[CAPREGBASE + 0x06] = 0x00;
+    s->mmio[CAPREGBASE + 0x07] = 0x00;
+    s->mmio[CAPREGBASE + 0x08] = 0x80;        // We can cache whole frame, not 64-bit capable
+    s->mmio[CAPREGBASE + 0x09] = 0x68;        // EECP
+    s->mmio[CAPREGBASE + 0x0a] = 0x00;
+    s->mmio[CAPREGBASE + 0x0b] = 0x00;
+
+
+    /* PHY clocks valid */
+    s->mmio[0x400] = (0x3 << 6);
 
     return 0;
 }
 
 static void ehci_register(void)
 {
-    pci_qdev_register(&ehci_info);
+    sysbus_register_withprop(&ehci_info);
 }
 device_init(ehci_register);
 
