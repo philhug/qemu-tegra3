@@ -6230,7 +6230,7 @@ static int disas_cp14_read(CPUState * env, DisasContext *s, uint32_t insn)
     }
     fprintf(stderr, "Unknown cp14 read op1:%d crn:%d crm:%d op2:%d\n",
             op1, crn, crm, op2);
-    return 1;
+    return 0;
 }
 
 static int disas_cp14_write(CPUState * env, DisasContext *s, uint32_t insn)
@@ -6263,7 +6263,7 @@ static int disas_cp14_write(CPUState * env, DisasContext *s, uint32_t insn)
     }
     fprintf(stderr, "Unknown cp14 write op1:%d crn:%d crm:%d op2:%d\n",
             op1, crn, crm, op2);
-    return 1;
+    return 0;
 }
 
 static int disas_coproc_insn(CPUState * env, DisasContext *s, uint32_t insn)

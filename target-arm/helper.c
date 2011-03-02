@@ -1587,6 +1587,9 @@ void HELPER(set_cp15)(CPUState *env, uint32_t insn, uint32_t val)
         case 1: /* TCM memory region registers.  */
             /* Not implemented.  */
             goto bad_reg;
+        case 12: /* Perf counter */
+            /* Ignore */
+            break;
         default:
             goto bad_reg;
         }
@@ -1879,6 +1882,10 @@ uint32_t HELPER(get_cp15)(CPUState *env, uint32_t insn)
     case 8: /* MMU TLB control.  */
         goto bad_reg;
     case 9: /* Cache lockdown.  */
+        if (crm ==  12) { /* Perf counter */
+            /* Ignore */
+            return 0;
+        }
         switch (op1) {
         case 0: /* L1 cache.  */
 	    if (arm_feature(env, ARM_FEATURE_OMAPCP))
