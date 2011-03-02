@@ -9897,14 +9897,15 @@ void cpu_dump_state(CPUState *env, FILE *f, fprintf_function cpu_fprintf,
             cpu_fprintf(f, " ");
     }
     psr = cpsr_read(env);
-    cpu_fprintf(f, "PSR=%08x %c%c%c%c %c %s%d\n",
+    cpu_fprintf(f, "PSR=%08x %c%c%c%c %c %s%d[%d]\n",
                 psr,
                 psr & (1 << 31) ? 'N' : '-',
                 psr & (1 << 30) ? 'Z' : '-',
                 psr & (1 << 29) ? 'C' : '-',
                 psr & (1 << 28) ? 'V' : '-',
                 psr & CPSR_T ? 'T' : 'A',
-                cpu_mode_names[psr & 0xf], (psr & 0x10) ? 32 : 26);
+                cpu_mode_names[psr & 0xf], (psr & 0x10) ? 32 : 26,
+                env->cpu_index);
 
 #if 0
     for (i = 0; i < 16; i++) {
