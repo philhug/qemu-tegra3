@@ -7,8 +7,8 @@
  * This code is licenced under the GPL.
  */
 
-/* 64 external IRQ lines.  */
-#define GIC_NIRQ 96
+/* 128 external IRQ lines.  */
+#define GIC_NIRQ 160
 #include "mpcore.c"
 
 static SysBusDeviceInfo mpcore_priv_info = {
