@@ -292,6 +292,7 @@ static const USBDesc desc_net = {
         .iSerialNumber     = STRING_SERIALNUMBER,
     },
     .full = &desc_device_net,
+    .high = &desc_device_net,
     .str  = usb_net_stringtable,
 };
 
@@ -1166,8 +1167,7 @@ static int usb_net_handle_datain(USBNetState *s, USBPacket *p)
         ret = p->len;
     memcpy(p->data, &s->in_buf[s->in_ptr], ret);
     s->in_ptr += ret;
-    if (s->in_ptr >= s->in_len &&
-                    (is_rndis(s) || (s->in_len & (64 - 1)) || !ret)) {
+    if (s->in_ptr >= s->in_len) {
         /* no short packet necessary */
         s->in_ptr = s->in_len = 0;
     }
@@ -1217,10 +1217,8 @@ static int usb_net_handle_dataout(USBNetState *s, USBPacket *p)
     s->out_ptr += sz;
 
     if (!is_rndis(s)) {
-        if (ret < 64) {
-            qemu_send_packet(&s->nic->nc, s->out_buf, s->out_ptr);
-            s->out_ptr = 0;
-        }
+        qemu_send_packet(&s->nic->nc, s->out_buf, s->out_ptr);
+        s->out_ptr = 0;
         return ret;
     }
     len = le32_to_cpu(msg->MessageLength);
