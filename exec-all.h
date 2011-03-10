@@ -109,7 +109,7 @@ void tlb_set_page(CPUState *env, target_ulong vaddr,
 
 #define CODE_GEN_ALIGN           16 /* must be >= of the size of a icache line */
 
-#define CODE_GEN_PHYS_HASH_BITS     15
+#define CODE_GEN_PHYS_HASH_BITS     20
 #define CODE_GEN_PHYS_HASH_SIZE     (1 << CODE_GEN_PHYS_HASH_BITS)
 
 #define MIN_CODE_GEN_BUFFER_SIZE     (1024 * 1024)
