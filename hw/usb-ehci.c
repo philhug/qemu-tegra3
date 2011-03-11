@@ -136,7 +136,13 @@
 #define PORTSC_CSC           (1 << 1)     // Connect Status Change
 #define PORTSC_CONNECT       (1 << 0)     // Current Connect Status
 
+#define EHCI_LOWCPU
+
+#ifdef EHCI_HACK_LOWCPU
+#define FRAME_TIMER_FREQ 100
+#else
 #define FRAME_TIMER_FREQ 1000
+#endif
 #define FRAME_TIMER_USEC (1000000 / FRAME_TIMER_FREQ)
 
 #define NB_MAXINTRATE    8        // Max rate at which controller issues ints
@@ -1798,6 +1804,7 @@ static void ehci_advance_async_state(EHCIState *ehci)
     }
 }
 
+#ifndef EHCI_HACK_LOWCPU
 static void ehci_advance_periodic_state(EHCIState *ehci)
 {
     uint32_t entry;
@@ -1851,6 +1858,7 @@ static void ehci_advance_periodic_state(EHCIState *ehci)
         ehci->pstate = EST_ACTIVE;
     }
 }
+#endif
 
 static void ehci_frame_timer(void *opaque)
 {
@@ -1894,9 +1902,11 @@ static void ehci_frame_timer(void *opaque)
         } else {
             // TODO could this cause periodic frames to get skipped if async
             // active?
+#ifndef EHCI_HACK_LOWCPU
             if (ehci->astate != EST_EXECUTING) {
                 ehci_advance_periodic_state(ehci);
             }
+#endif
         }
 
         ehci->last_run_usec += FRAME_TIMER_USEC;
