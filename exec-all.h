@@ -177,15 +177,15 @@ static inline unsigned int tb_jmp_cache_hash_func(target_ulong pc)
 	    | (tmp & TB_JMP_ADDR_MASK));
 }
 
-static inline unsigned int tb_phys_hash_func(tb_page_addr_t pc)
+static inline unsigned int tb_phys_hash_func(tb_page_addr_t phys_pc, target_ulong pc)
 {
-    return (pc >> 2) & (CODE_GEN_PHYS_HASH_SIZE - 1);
+    return ((phys_pc ^ (phys_pc ^ pc)) >> 2) & (CODE_GEN_PHYS_HASH_SIZE - 1);
 }
 
 void tb_free(TranslationBlock *tb);
 void tb_flush(CPUState *env);
 void tb_link_page(TranslationBlock *tb,
-                  tb_page_addr_t phys_pc, tb_page_addr_t phys_page2);
+                  tb_page_addr_t phys_pc, tb_page_addr_t phys_page2, target_ulong pc);
 void tb_phys_invalidate(TranslationBlock *tb, tb_page_addr_t page_addr);
 
 extern TranslationBlock *tb_phys_hash[CODE_GEN_PHYS_HASH_SIZE];

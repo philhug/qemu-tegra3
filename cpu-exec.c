@@ -102,7 +102,7 @@ static TranslationBlock *tb_find_slow(target_ulong pc,
     phys_pc = get_page_addr_code(env, pc);
     phys_page1 = phys_pc & TARGET_PAGE_MASK;
     phys_page2 = -1;
-    h = tb_phys_hash_func(phys_pc);
+    h = tb_phys_hash_func(phys_pc, pc);
     ptb1 = &tb_phys_hash[h];
     for(;;) {
         tb = *ptb1;

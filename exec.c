@@ -866,7 +866,7 @@ void tb_phys_invalidate(TranslationBlock *tb, tb_page_addr_t page_addr)
 
     /* remove the TB from the hash list */
     phys_pc = tb->page_addr[0] + (tb->pc & ~TARGET_PAGE_MASK);
-    h = tb_phys_hash_func(phys_pc);
+    h = tb_phys_hash_func(phys_pc, tb->pc);
     tb_remove(&tb_phys_hash[h], tb,
               offsetof(TranslationBlock, phys_hash_next));
 
@@ -1001,7 +1001,7 @@ TranslationBlock *tb_gen_code(CPUState *env,
     if ((pc & TARGET_PAGE_MASK) != virt_page2) {
         phys_page2 = get_page_addr_code(env, virt_page2);
     }
-    tb_link_page(tb, phys_pc, phys_page2);
+    tb_link_page(tb, phys_pc, phys_page2, pc);
     return tb;
 }
 
@@ -1260,7 +1260,8 @@ static inline void tb_alloc_page(TranslationBlock *tb,
 /* add a new TB and link it to the physical page tables. phys_page2 is
    (-1) to indicate that only one page contains the TB. */
 void tb_link_page(TranslationBlock *tb,
-                  tb_page_addr_t phys_pc, tb_page_addr_t phys_page2)
+                  tb_page_addr_t phys_pc, tb_page_addr_t phys_page2,
+                  target_ulong pc)
 {
     unsigned int h;
     TranslationBlock **ptb;
@@ -1269,7 +1270,7 @@ void tb_link_page(TranslationBlock *tb,
        before we are done.  */
     mmap_lock();
     /* add in the physical hash table */
-    h = tb_phys_hash_func(phys_pc);
+    h = tb_phys_hash_func(phys_pc, pc);
     ptb = &tb_phys_hash[h];
     tb->phys_hash_next = *ptb;
     *ptb = tb;
