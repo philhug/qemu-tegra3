@@ -832,6 +832,7 @@ static sd_rsp_type_t sd_normal_command(SDState *sd,
     case 8:	/* CMD8:   SEND_IF_COND / SEND_EXT_CSD */
         if (sd->emmc) {
             switch (sd->state) {
+            case sd_idle_state:
             case sd_transfer_state:
                 /* MMC : Sends the EXT_CSD register as a Block of data */
                 sd->state = sd_sendingdata_state;
