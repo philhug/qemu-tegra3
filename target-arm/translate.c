@@ -7743,6 +7743,7 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
             break;
         default:
         illegal_op:
+    printf("invalid insn: 0x%x\n", env->regs[15]);
             gen_exception_insn(s, 4, EXCP_UDEF);
             break;
         }
@@ -9572,10 +9573,12 @@ static void disas_thumb_insn(CPUState *env, DisasContext *s)
     }
     return;
 undef32:
+    printf("invalid insn: 0x%x\n", env->regs[15]);
     gen_exception_insn(s, 4, EXCP_UDEF);
     return;
 illegal_op:
 undef:
+    printf("invalid insn: 0x%x\n", env->regs[15]);
     gen_exception_insn(s, 2, EXCP_UDEF);
 }
 
