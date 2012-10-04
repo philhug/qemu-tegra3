@@ -151,7 +151,8 @@ static void cpu_reset_model_id(CPUARMState *env, uint32_t id)
         env->cp15.c0_clid = (1 << 27) | (1 << 24) | 3;
         env->cp15.c0_ccsid[0] = 0xe00fe015; /* 16k L1 dcache. */
         env->cp15.c0_ccsid[1] = 0x200fe015; /* 16k L1 icache. */
-        env->cp15.c1_sys = 0x00c50078;
+        //env->cp15.c1_sys = 0x00c50078;
+        env->cp15.c1_sys = 0x00c52078;
         break;
     case ARM_CPUID_CORTEXM3:
         set_feature(env, ARM_FEATURE_V4T);
