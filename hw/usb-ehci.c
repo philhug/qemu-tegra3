@@ -586,7 +586,7 @@ static uint32_t ehci_mem_readl(void *ptr, target_phys_addr_t addr)
 static void ehci_mem_writeb(void *ptr, target_phys_addr_t addr, uint32_t val)
 {
     fprintf(stderr, "EHCI doesn't handle byte writes to MMIO\n");
-    exit(1);
+    // TODO exit(1);
 }
 
 static void ehci_mem_writew(void *ptr, target_phys_addr_t addr, uint32_t val)
