@@ -15,7 +15,7 @@
 static inline int
 gic_get_current_cpu(void)
 {
-  return cpu_single_env->cpu_index;
+  return cpu_single_env == NULL ? 0 : cpu_single_env->cpu_index;
 }
 
 #include "arm_gic.c"
