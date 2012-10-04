@@ -34,7 +34,7 @@
 #include "block_int.h"
 #include "sd.h"
 
-//#define DEBUG_SD 1
+#define DEBUG_SD 1
 
 #ifdef DEBUG_SD
 #define DPRINTF(fmt, ...) \
@@ -831,9 +831,11 @@ static sd_rsp_type_t sd_normal_command(SDState *sd,
 
     case 8:	/* CMD8:   SEND_IF_COND / SEND_EXT_CSD */
         if (sd->emmc) {
+DPRINTF ("CMD8 state: %i\n", sd->state);
             switch (sd->state) {
             case sd_idle_state:
             case sd_transfer_state:
+DPRINTF ("CMD8 idle/trasnfer state\n");
                 /* MMC : Sends the EXT_CSD register as a Block of data */
                 sd->state = sd_sendingdata_state;
                 memcpy(sd->data, sd->ext_csd, 512);
@@ -845,10 +847,11 @@ static sd_rsp_type_t sd_normal_command(SDState *sd,
             }
         } else {
             /* SD Physical Layer Specification Version 2.00 command */
+DPRINTF ("CMD8 state: %i\n", sd->state);
             switch (sd->state) {
             case sd_idle_state:
                 sd->vhs = 0;
-
+DPRINTF ("CMD8 idle state\n");
                 /* No response if not exactly one VHS bit is set.  */
                 if (!(req.arg >> 8) || (req.arg >> ffs(req.arg & ~0xff)))
                     return sd->spi ? sd_r7 : sd_r0;
