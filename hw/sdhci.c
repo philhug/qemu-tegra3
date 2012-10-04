@@ -267,6 +267,7 @@ static void sdhci_dma_transfer(sdhci_state *s)
 
     /* only support block aligned transfer : TODO upgrade to ADMA2 */
     for (; s->block_count > 0; s->block_count--) {
+#if 0 
         while (!(desc.flags & ADMA_VALID) ||
                 (desc.size < (s->block_size & 0xfff)) ||
                 ((desc.flags & ADMA_OP_MASK) != ADMA_OP_TRAN)) {
@@ -284,7 +285,7 @@ static void sdhci_dma_transfer(sdhci_state *s)
                                      sizeof(desc));
             /* TODO check IT flag */
         }
-
+#endif
         for (b = 0; b < (s->block_size & 0xfff); b++, desc.addr++) {
             if (s->transfer_mode & SDHCI_TRNS_READ) {
                 uint8_t data = sd_read_data(s->sd);
