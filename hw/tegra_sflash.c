@@ -48,7 +48,7 @@ typedef struct {
 static uint32_t tegra_sflash_read(void *opaque, target_phys_addr_t offset)
 {
     tegra_sflash_state *s = (tegra_sflash_state *)opaque;
-    DPRINTF("READ at %x\n", offset);
+    DPRINTF("READ at %x status: 0x%x\n", offset, s->status);
 
     switch (offset) {
     case 0x00: /* SPI_COMMAND */
@@ -62,9 +62,15 @@ static uint32_t tegra_sflash_read(void *opaque, target_phys_addr_t offset)
         return s->rx_cmp;
     case 0x0c: /* SPI_DMA_CTL */
         return s->dma_ctl;
-    case 0x10: /* SPI_TX_FIFO */
+    case 0x10: /* SPI_TX_FIFO */ // tegra2
         hw_error("tegra_sflash_read: Write only register\n");
-    case 0x20: /* SPI_RX_FIFO */
+    case 0x1c: /* SLINK_STATUS2_0 */
+	return 0; //TODO
+    case 0x20: /* SPI_RX_FIFO */ //tegra2
+        return 0;
+    case 0x100: /* SLINK_TX_FIFO_0 */
+        hw_error("tegra_sflash_read: Write only register\n");
+    case 0x180: /* SLINK_RX_FIFO_0 */
         return 0;
     default:
         hw_error("tegra_sflash_read: Bad offset %x\n", (int)offset);
@@ -98,7 +104,13 @@ static void tegra_sflash_write(void *opaque, target_phys_addr_t offset,
         break;
     case 0x10: /* SPI_TX_FIFO */
         break;
+    case 0x1c: /* SLINK_STATUS2_0 */
+	break; //TODO
     case 0x20: /* SPI_RX_FIFO */
+        hw_error("tegra_sflash_read: Read only register\n");
+    case 0x100: /* SLINK_TX_FIFO_0 */
+	break;
+    case 0x180: /* SLINK_RX_FIFO_0 */
         hw_error("tegra_sflash_read: Read only register\n");
     default:
         hw_error("tegra_sflash_write: Bad offset %x\n", (int)offset);
@@ -125,7 +137,7 @@ static int tegra_sflash_init(SysBusDevice *dev)
     iomemtype = cpu_register_io_memory(tegra_sflash_readfn,
                                        tegra_sflash_writefn, s,
                                        DEVICE_NATIVE_ENDIAN);
-    sysbus_init_mmio(dev, 0x80, iomemtype);
+    sysbus_init_mmio(dev, 0x200, iomemtype);
     sysbus_init_irq(dev, &s->irq);
 
     return 0;
