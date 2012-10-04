@@ -515,6 +515,10 @@ static uint32_t sdhci_vendor_read(sdhci_state *s, target_phys_addr_t offset,
     case 0x114:
     case 0x118:
     case 0x11C:
+    case 0x1E0:
+    case 0x1E4:
+    case 0x1E8:
+    case 0x1Ec:
       return 0;
     default:
         hw_error("sdhci_vendor_read: Bad offset %x\n", offset);
@@ -541,6 +545,14 @@ static void sdhci_vendor_write(sdhci_state *s, target_phys_addr_t offset,
     case 0x118:
         break;
     case 0x11C:
+        break;
+    case 0x1E0:
+        break;
+    case 0x1E4:
+        break;
+    case 0x1E8:
+        break;
+    case 0x1EC:
         break;
     default:
         hw_error("sdhci_vendor_write: Bad offset %x\n", offset);
