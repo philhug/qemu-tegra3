@@ -30,7 +30,7 @@ do { fprintf(stderr, "tegra_gpio: " fmt , ## __VA_ARGS__); } while (0)
 #define DPRINTF(fmt, ...) do {} while (0)
 #endif
 
-#define BANK_COUNT  7
+#define BANK_COUNT  8
 #define GROUP_COUNT (BANK_COUNT * 4)
 #define GPIO_COUNT  (GROUP_COUNT * 8)
 
