@@ -593,6 +593,9 @@ static uint32_t gic_cpu_read(gic_state *s, int cpu, int offset)
     case 0x08: /* Binary Point */
         /* ??? Not implemented.  */
         return 0;
+    case 0x10: /* ?? */
+        /* ??? Not implemented.  */
+        return 0;
     case 0x0c: /* Acknowledge */
         return gic_acknowledge_irq(s, cpu);
     case 0x14: /* Runing Priority */
@@ -600,7 +603,8 @@ static uint32_t gic_cpu_read(gic_state *s, int cpu, int offset)
     case 0x18: /* Highest Pending Interrupt */
         return s->current_pending[cpu];
     default:
-        hw_error("gic_cpu_read: Bad offset %x\n", (int)offset);
+        //hw_error("gic_cpu_read: Bad offset %x\n", (int)offset);
+        DPRINTF("gic_cpu_read: Bad offset %x\n", (int)offset);
         return 0;
     }
 }
