@@ -45,7 +45,9 @@ static uint32_t tegra_apb_read(void *opaque, target_phys_addr_t offset)
 
     switch (offset) {
     case 0x804: /* APB_MISC_GP_HIDREV_0 */
-        return 0x55555555; // Cortex A9 
+	return 0x00033017; // Cortex A9, tegra3
+    case 0x860: /* ? */
+	return 0x0;
     }
 
     return 0;
