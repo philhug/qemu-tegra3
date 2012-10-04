@@ -153,11 +153,11 @@ static void tegra_i2c_xfer_done(tegra_i2c_state *s)
     i2c_end_transfer(s->bus);
     s->packet_transfer_status |= (1<<24) /* transfer complete */;
     s->state = I2C_HEADER0;
-    if (s->header_specific & I2C_HEADER_IE_ENABLE) {
+    //if (s->header_specific & I2C_HEADER_IE_ENABLE) {
         tegra_i2c_update(s, I2C_INT_PACKET_XFER_COMPLETE |
                             I2C_INT_ALL_PACKETS_XFER_COMPLETE |
 			    I2C_INT_TX_FIFO_DATA_REQ, 1);
-    }
+    //}
 }
 
 static void tegra_i2c_fill_rx(tegra_i2c_state *s)
