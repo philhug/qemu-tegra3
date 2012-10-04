@@ -252,6 +252,7 @@ static void sdhci_dma_transfer(sdhci_state *s)
         uint16_t size;
         uint32_t addr;
     } desc;
+    DPRINTF("DMA\n");
 
     if (s->host_control & SDHCI_CTRL_ADMA32) {
         cpu_physical_memory_read(s->adma_address, (void *)&desc, sizeof(desc));
@@ -304,7 +305,7 @@ static void sdhci_command(sdhci_state *s, uint32_t cmd)
 {
     SDRequest request;
     int len;
-
+DPRINTF("sdhci_command\n");
     if (!s->sd) { /* nothing beyond the controller */
         s->int_status |= SDHCI_INT_TIMEOUT;
         sdhci_set_irq(s);
@@ -568,7 +569,7 @@ static void sdhci_vendor_write(sdhci_state *s, target_phys_addr_t offset,
 static uint32_t sdhci_read32(void *opaque, target_phys_addr_t offset)
 {
     sdhci_state *s = (sdhci_state *)opaque;
-    DPRINTF("READ32 at %x\n", offset);
+    DPRINTF("READ32 at 0x%x int_status: 0x%x\n", offset, s->int_status);
 
     if (offset < 0x100) {
         return sdhci_read(s, offset, 4);
