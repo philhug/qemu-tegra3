@@ -367,7 +367,7 @@ obj-arm-y += vexpress.o
 obj-arm-y += strongarm.o
 obj-arm-y += collie.o
 obj-arm-y += tegra_i2c.o tegra_sflash.o tegra_display.o tegra_kbc.o
-obj-arm-y += tegra_clocks.o tegra_tmr.o tegra_pmc.o tegra_gpio.o tegra2.o
+obj-arm-y += tegra_clocks.o tegra_tmr.o tegra_pmc.o tegra_gpio.o tegra_apb.o tegra_uptag.o tegra_fuse.o tegra2.o tegra_flow.o tegra_max77663.o tegra_mc.o tegra3.o
 obj-arm-y += sdhci.o bq20z75.o nct1008.o
 
 obj-sh4-y = shix.o r2d.o sh7750.o sh7750_regnames.o tc58128.o
