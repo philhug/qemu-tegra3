@@ -809,6 +809,7 @@ void do_interrupt(CPUARMState *env)
     uint32_t mask;
     int new_mode;
     uint32_t offset;
+    char buf[512];
 
     if (IS_M(env)) {
         do_interrupt_v7m(env);
@@ -895,6 +896,12 @@ void do_interrupt(CPUARMState *env)
         addr += 0xffff0000;
     }
 //    DPRINTF("do_interrupt address: 0x%x exception: 0x%x cpu: 0x%x cp15: 0x%x\n", addr, env->exception_index, env->regs[15], env->cp15.c1_sys);
+
+    if (env->exception_index == 0x02) {
+	cpu_physical_memory_read(env->regs[2], (void *)buf, sizeof(buf));
+	DPRINTF("DEBUGOUT: %s", buf);
+    }
+
     switch_mode (env, new_mode);
     env->spsr = cpsr_read(env);
     /* Clear IT bits.  */
