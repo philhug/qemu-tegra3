@@ -621,7 +621,7 @@ static void sdhci_write8(void *opaque, target_phys_addr_t offset,
                           uint32_t value)
 {
     sdhci_state *s = (sdhci_state *)opaque;
-    DPRINTF("WRITE8 %x at %x\n", value, reg_offset);
+    DPRINTF("WRITE8 %x at %x\n", value, offset);
 
     if (offset < 0x100) {
         sdhci_write(s, offset, value, 1);
