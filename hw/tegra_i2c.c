@@ -233,7 +233,7 @@ static uint32_t tegra_i2c_read(void *opaque, target_phys_addr_t offset)
 {
     tegra_i2c_state *s = (tegra_i2c_state *)opaque;
     uint32_t value, shift;
-    DPRINTF("READ at %x\n", offset);
+    DPRINTF("READ at 0x%x\n", offset);
 
     if (s->is_dvc) {
         if (offset < 0x40) {
@@ -356,7 +356,8 @@ static void tegra_i2c_write(void *opaque, target_phys_addr_t offset,
         hw_error("tegra_i2c_write: I2C_RX_FIFO is read only\n");
         break;
     case 0x58 /* I2C_PACKET_TRANSFER_STATUS */:
-        hw_error("tegra_i2c_write: I2C_PACKET_TRANSFER_STATUS is read only\n");
+        // TODO hw_error("tegra_i2c_write: I2C_PACKET_TRANSFER_STATUS 0x%x is read only\n", offset);
+        DPRINTF("tegra_i2c_write: I2C_PACKET_TRANSFER_STATUS 0x%x is read only\n", offset);
         break;
     case 0x5c /* I2C_FIFO_CONTROL */:
         if (value & I2C_FIFO_CONTROL_TX_FLUSH) {
