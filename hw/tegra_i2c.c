@@ -22,7 +22,7 @@
 #include "sysbus.h"
 #include "i2c.h"
 
-/* #define DEBUG_I2C 1 */
+#define DEBUG_I2C 1
 
 #ifdef DEBUG_I2C
 #define DPRINTF(fmt, ...) \

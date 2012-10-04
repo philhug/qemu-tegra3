@@ -18,7 +18,7 @@
    interrupt lines.  */
 #define GIC_NIRQ 96
 #define NCPU 1
-#define NVIC 1
+//#define NVIC 1
 
 /* Only a single "CPU" interface is present.  */
 static inline int

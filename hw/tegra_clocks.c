@@ -21,7 +21,7 @@
 
 #include "sysbus.h"
 
-/* #define DEBUG_CLOCKS 1 */
+#define DEBUG_CLOCKS 1
 
 #ifdef DEBUG_CLOCKS
 #define DPRINTF(fmt, ...) \

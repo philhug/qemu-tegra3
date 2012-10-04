@@ -11,7 +11,7 @@
    controller, MPCore distributed interrupt controller and ARMv7-M
    Nested Vectored Interrupt Controller.  */
 
-//#define DEBUG_GIC
+#define DEBUG_GIC
 
 #ifdef DEBUG_GIC
 #define DPRINTF(fmt, ...) \

@@ -21,7 +21,7 @@
 
 #include "sysbus.h"
 
-/* #define DEBUG_GPIO 1 */
+#define DEBUG_GPIO 1
 
 #ifdef DEBUG_GPIO
 #define DPRINTF(fmt, ...) \

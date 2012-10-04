@@ -22,7 +22,7 @@
 #include "sysbus.h"
 #include "sysemu.h"
 
-/* #define DEBUG_PMC 1 */
+#define DEBUG_PMC 1
 
 #ifdef DEBUG_PMC
 #define DPRINTF(fmt, ...) \

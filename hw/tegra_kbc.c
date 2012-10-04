@@ -22,7 +22,7 @@
 #include "sysbus.h"
 #include "console.h"
 
-/* #define DEBUG_KBC 1 */
+#define DEBUG_KBC 1
 
 #ifdef DEBUG_KBC
 #define DPRINTF(fmt, ...) \

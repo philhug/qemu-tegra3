@@ -21,7 +21,7 @@
 
 #include "sysbus.h"
 
-/* #define DEBUG_SPI 1 */
+#define DEBUG_SPI 1
 
 #ifdef DEBUG_SPI
 #define DPRINTF(fmt, ...) \

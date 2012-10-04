@@ -23,7 +23,7 @@
 #include "sysbus.h"
 #include "sd.h"
 
-/*#define DEBUG_SDHCI 1*/
+/* #define DEBUG_SDHCI 1 */
 
 #ifdef DEBUG_SDHCI
 #define DPRINTF(fmt, ...) \
