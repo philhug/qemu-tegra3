@@ -776,7 +776,7 @@ static void do_interrupt_v7m(CPUARMState *env)
         cpu_abort(env, "Unhandled exception 0x%x\n", env->exception_index);
         return; /* Never happens.  Keep compiler happy.  */
     }
-    DPRINTF("do_interrupt address: 0x%x cpu: 0x%x\n", addr, env->regs[15]);
+//    DPRINTF("do_interrupt address: 0x%x cpu: 0x%x\n", addr, env->regs[15]);
 
     /* Align stack pointer.  */
     /* ??? Should only do this if Configuration Control Register
@@ -894,7 +894,7 @@ void do_interrupt(CPUARMState *env)
     if (env->cp15.c1_sys & (1 << 13)) {
         addr += 0xffff0000;
     }
-    DPRINTF("do_interrupt address: 0x%x exception: 0x%x cpu: 0x%x cp15: 0x%x\n", addr, env->exception_index, env->regs[15], env->cp15.c1_sys);
+//    DPRINTF("do_interrupt address: 0x%x exception: 0x%x cpu: 0x%x cp15: 0x%x\n", addr, env->exception_index, env->regs[15], env->cp15.c1_sys);
     switch_mode (env, new_mode);
     env->spsr = cpsr_read(env);
     /* Clear IT bits.  */
