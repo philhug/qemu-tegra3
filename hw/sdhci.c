@@ -403,6 +403,7 @@ static uint32_t sdhci_read(void *opaque, target_phys_addr_t offset, int size)
         return s->adma_address;
     case SDHCI_SLOT_INT_STATUS:
     case SDHCI_HOST_VERSION:
+    case 0xfa: //TODO HACK
         return 0;
     default:
         hw_error("sdhci_read: Bad offset %x\n", (int)offset);
