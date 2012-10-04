@@ -34,6 +34,8 @@ do { fprintf(stderr, "tegra_pmc: " fmt , ## __VA_ARGS__); } while (0)
 typedef struct {
     SysBusDevice busdev;
     uint32_t control;
+    uint32_t scratch[43];
+    uint32_t secure_scratch[6];
     qemu_irq irq;
 } tegra_pmc_state;
 
@@ -45,6 +47,12 @@ static uint32_t tegra_pmc_read(void *opaque, target_phys_addr_t offset)
     switch (offset) {
     case 0x00: /* PMC_CNTRL */
         return s->control;
+    case 0xb0 ... 0xc4: /* APBDEV_PMC_SECURE_SCRATCH0_0 ... APBDEV_PMC_SECURE_SCRATCH5_0 */
+	return s->secure_scratch[(offset-0xb0)/4+0];
+    case 0x50 ... 0xac: /* APBDEV_PMC_SCRATCH24_0 ... APBDEV_PMC_SCRATCH23_0 */
+	return s->scratch[(offset-0x50)/4+0];
+    case 0xfc ... 0x144: /* APBDEV_PMC_SCRATCH24_0 ... APBDEV_PMC_SCRATCH42_0 */
+	return s->scratch[(offset-0xfc)/4+24];
     }
 
     return 0;
@@ -64,6 +72,18 @@ static void tegra_pmc_write(void *opaque, target_phys_addr_t offset,
             printf("Resetting the SoC ...\n");
             qemu_system_reset_request();
         }
+        break;
+    case 0xb0 ... 0xc4: /* APBDEV_PMC_SECURE_SCRATCH0_0 ... APBDEV_PMC_SECURE_SCRATCH5_0 */
+    DPRINTF("WRITE at %x <= %x secure_scratch: %x\n", offset, value, (offset-0xb0)/4+0);
+	s->secure_scratch[(offset-0xb0)/4+0] = value;
+        break;
+    case 0x50 ... 0xac: /* APBDEV_PMC_SCRATCH24_0 ... APBDEV_PMC_SCRATCH23_0 */
+    DPRINTF("WRITE at %x <= %x scratch: %x\n", offset, value, (offset-0x50)/4+0);
+	s->scratch[(offset-0x50)/4+0] = value;
+        break;
+    case 0xfc ... 0x144: /* APBDEV_PMC_SCRATCH24_0 ... APBDEV_PMC_SCRATCH42_0 */
+    DPRINTF("WRITE at %x <= %x scratch: %x\n", offset, value, (offset-0xfc)/4+24);
+	s->scratch[(offset-0xfc)/4+24] = value;
         break;
     }
 }
@@ -88,7 +108,7 @@ static int tegra_pmc_init(SysBusDevice *dev)
     iomemtype = cpu_register_io_memory(tegra_pmc_readfn,
                                        tegra_pmc_writefn, s,
                                        DEVICE_NATIVE_ENDIAN);
-    sysbus_init_mmio(dev, 0x100, iomemtype);
+    sysbus_init_mmio(dev, 0x400, iomemtype);
 
     return 0;
 }
