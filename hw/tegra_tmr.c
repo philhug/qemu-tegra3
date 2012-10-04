@@ -37,10 +37,10 @@ do { fprintf(stderr, "tegra_timer: " fmt , ## __VA_ARGS__); } while (0)
 typedef struct {
     SysBusDevice busdev;
     ptimer_state *tmrus;
-    ptimer_state *timer[4];
+    ptimer_state *timer[10];
     uint32_t usec_cfg;
-    uint32_t ptv[4];
-    qemu_irq irq[4];
+    uint32_t ptv[10];
+    qemu_irq irq[10];
 } tegra_timer_state;
 
 static void tegra_timer_set_ptv(tegra_timer_state *s, int idx, uint32 value)
@@ -83,6 +83,30 @@ static uint32_t tegra_timer_read(void *opaque, target_phys_addr_t offset)
         return s->ptv[3];
     case 0x5C /*TIMER_TMR_CTR 3*/:
         return ptimer_get_count(s->timer[3]) & 0x1fffffff;
+    case 0x60 /*TIMER_TMR_PTV 4*/:
+        return s->ptv[4];
+    case 0x64 /*TIMER_TMR_CTR 4*/:
+        return ptimer_get_count(s->timer[4]) & 0x1fffffff;
+    case 0x68 /*TIMER_TMR_PTV 5*/:
+        return s->ptv[5];
+    case 0x6c /*TIMER_TMR_CTR 5*/:
+        return ptimer_get_count(s->timer[5]) & 0x1fffffff;
+    case 0x70 /*TIMER_TMR_PTV 6*/:
+        return s->ptv[6];
+    case 0x74 /*TIMER_TMR_CTR 6*/:
+        return ptimer_get_count(s->timer[6]) & 0x1fffffff;
+    case 0x78 /*TIMER_TMR_PTV 7*/:
+        return s->ptv[7];
+    case 0x7c /*TIMER_TMR_CTR 7*/:
+        return ptimer_get_count(s->timer[7]) & 0x1fffffff;
+    case 0x80 /*TIMER_TMR_PTV 8*/:
+        return s->ptv[8];
+    case 0x84 /*TIMER_TMR_CTR 8*/:
+        return ptimer_get_count(s->timer[8]) & 0x1fffffff;
+    case 0x88 /*TIMER_TMR_PTV 9*/:
+        return s->ptv[9];
+    case 0x8c /*TIMER_TMR_CTR 9*/:
+        return ptimer_get_count(s->timer[9]) & 0x1fffffff;
         break;
     default:
         hw_error("tegra_timer_read: Bad offset %x\n", (int)offset);
@@ -137,6 +161,54 @@ static void tegra_timer_write(void *opaque, target_phys_addr_t offset,
             qemu_irq_lower(s->irq[3]);
         }
         break;
+    case 0x60 /*TIMER_TMR_PTV 4*/:
+        tegra_timer_set_ptv(s, 4, value);
+        break;
+    case 0x64 /*TIMER_TMR_CTR 4*/:
+        if (value & 0x40000000) {
+            qemu_irq_lower(s->irq[4]);
+        }
+        break;
+    case 0x68 /*TIMER_TMR_PTV 5*/:
+        tegra_timer_set_ptv(s, 5, value);
+        break;
+    case 0x6C /*TIMER_TMR_CTR 5*/:
+        if (value & 0x40000000) {
+            qemu_irq_lower(s->irq[5]);
+        }
+        break;
+    case 0x70 /*TIMER_TMR_PTV 6*/:
+        tegra_timer_set_ptv(s, 6, value);
+        break;
+    case 0x74 /*TIMER_TMR_CTR 6*/:
+        if (value & 0x40000000) {
+            qemu_irq_lower(s->irq[6]);
+        }
+        break;
+    case 0x78 /*TIMER_TMR_PTV 7*/:
+        tegra_timer_set_ptv(s, 7, value);
+        break;
+    case 0x7C /*TIMER_TMR_CTR 7*/:
+        if (value & 0x40000000) {
+            qemu_irq_lower(s->irq[7]);
+        }
+        break;
+    case 0x80 /*TIMER_TMR_PTV 8*/:
+        tegra_timer_set_ptv(s, 8, value);
+        break;
+    case 0x84 /*TIMER_TMR_CTR 8*/:
+        if (value & 0x40000000) {
+            qemu_irq_lower(s->irq[8]);
+        }
+        break;
+    case 0x88 /*TIMER_TMR_PTV 9*/:
+        tegra_timer_set_ptv(s, 9, value);
+        break;
+    case 0x8C /*TIMER_TMR_CTR 9*/:
+        if (value & 0x40000000) {
+            qemu_irq_lower(s->irq[9]);
+        }
+        break;
     case 0x10 /*TIMERUS_CNTR_1US*/: /* Read only */
     default:
         hw_error("tegra_timer_write: Bad offset %x\n", (int)offset);
@@ -174,7 +246,7 @@ static int tegra_timer_init(SysBusDevice *dev)
     s->tmrus = ptimer_init(bh);
     ptimer_set_freq(s->tmrus, TMR_BASE_FREQ);
     ptimer_set_limit(s->tmrus, 0xffffffff, 1);
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 10; i++) {
         sysbus_init_irq(dev, &s->irq[i]);
         bh = qemu_bh_new(tegra_timer_tick, &s->irq[i]);
         s->timer[i] = ptimer_init(bh);
@@ -191,12 +263,12 @@ static int tegra_timer_init(SysBusDevice *dev)
 static void tegra_timer_reset(DeviceState *d)
 {
     tegra_timer_state *s = container_of(d, tegra_timer_state, busdev.qdev);
+    int i;
 
     s->usec_cfg = 0xc;
-    s->ptv[0] = 0;
-    s->ptv[1] = 0;
-    s->ptv[2] = 0;
-    s->ptv[3] = 0;
+    for (i = 0; i < 10; i++) {
+	s->ptv[i] = 0;
+    }
 
     ptimer_run(s->tmrus, 0);
 }
@@ -212,8 +284,14 @@ static const VMStateDescription tegra_timer_vmstate = {
         VMSTATE_PTIMER(timer[1], tegra_timer_state),
         VMSTATE_PTIMER(timer[2], tegra_timer_state),
         VMSTATE_PTIMER(timer[3], tegra_timer_state),
+        VMSTATE_PTIMER(timer[4], tegra_timer_state),
+        VMSTATE_PTIMER(timer[5], tegra_timer_state),
+        VMSTATE_PTIMER(timer[6], tegra_timer_state),
+        VMSTATE_PTIMER(timer[7], tegra_timer_state),
+        VMSTATE_PTIMER(timer[8], tegra_timer_state),
+        VMSTATE_PTIMER(timer[9], tegra_timer_state),
         VMSTATE_UINT32(usec_cfg, tegra_timer_state),
-        VMSTATE_UINT32_ARRAY(ptv, tegra_timer_state, 4),
+        VMSTATE_UINT32_ARRAY(ptv, tegra_timer_state, 10),
         VMSTATE_END_OF_LIST()
     }
 };
