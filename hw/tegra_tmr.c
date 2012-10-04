@@ -57,6 +57,7 @@ static void tegra_timer_set_ptv(tegra_timer_state *s, int idx, uint32 value)
 static uint32_t tegra_timer_read(void *opaque, target_phys_addr_t offset)
 {
     tegra_timer_state *s = (tegra_timer_state *)opaque;
+    if (offset != 0x10)
     DPRINTF("read at 0x%x\n", offset);
 
     switch (offset) {
