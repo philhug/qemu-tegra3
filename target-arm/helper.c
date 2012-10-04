@@ -12,6 +12,15 @@
 #include "hw/loader.h"
 #endif
 
+#define DEBUG_ARMHELPER
+
+#ifdef DEBUG_ARMHELPER
+#define DPRINTF(fmt, ...)                                       \
+    do { printf("arm-helper: " fmt , ## __VA_ARGS__); } while (0)
+#else
+#define DPRINTF(fmt, ...)
+#endif
+
 static uint32_t cortexa9_cp15_c0_c1[8] =
 { 0x1031, 0x11, 0x000, 0, 0x00100103, 0x20000000, 0x01230000, 0x00002111 };
 
@@ -767,6 +776,7 @@ static void do_interrupt_v7m(CPUARMState *env)
         cpu_abort(env, "Unhandled exception 0x%x\n", env->exception_index);
         return; /* Never happens.  Keep compiler happy.  */
     }
+    DPRINTF("do_interrupt address: 0x%x cpu: 0x%x\n", addr, env->regs[15]);
 
     /* Align stack pointer.  */
     /* ??? Should only do this if Configuration Control Register
@@ -884,6 +894,7 @@ void do_interrupt(CPUARMState *env)
     if (env->cp15.c1_sys & (1 << 13)) {
         addr += 0xffff0000;
     }
+    DPRINTF("do_interrupt address: 0x%x exception: 0x%x cpu: 0x%x\n", addr, env->exception_index, env->regs[15]);
     switch_mode (env, new_mode);
     env->spsr = cpsr_read(env);
     /* Clear IT bits.  */
@@ -1054,8 +1065,11 @@ static int get_phys_addr_v5(CPUState *env, uint32_t address, int access_type,
     }
     *prot |= PAGE_EXEC;
     *phys_ptr = phys_addr;
+//if (address != phys_addr)
+    //DPRINTF("log address: 0x%x phys: 0x%x cpu: 0x%x sp: 0x%x\n", address, phys_addr, env->regs[15], env->regs[13]);
     return 0;
 do_fault:
+    DPRINTF("v4 fault: log address: 0x%x phys: 0x%x cpu:0x%x\n", address, phys_addr, env->regs[15], env->regs[13]);
     return code | (domain << 4);
 }
 
@@ -1157,8 +1171,11 @@ static int get_phys_addr_v6(CPUState *env, uint32_t address, int access_type,
         }
     }
     *phys_ptr = phys_addr;
+    //DPRINTF("v6 log address: 0x%x phys: 0x%x cpu: 0x%x sp: 0x%x\n", address, phys_addr, env->regs[15], env->regs[13]);
     return 0;
 do_fault:
+    DPRINTF("v6 fault log address: 0x%x phys: 0x%x cpu: 0x%x stack:0x%x\n", address, phys_addr, env->regs[15], env->regs[13]);
+
     return code | (domain << 4);
 }
 
@@ -1362,6 +1379,8 @@ void HELPER(set_cp15)(CPUState *env, uint32_t insn, uint32_t val)
     op1 = (insn >> 21) & 7;
     op2 = (insn >> 5) & 7;
     crm = insn & 0xf;
+    DPRINTF("cp15 register write (c%d, c%d, {%d, %d}) <= 0x%x cpu: 0x%x\n",
+              (insn >> 16) & 0xf, crm, op1, op2, val, env->regs[15]);
     switch ((insn >> 16) & 0xf) {
     case 0:
         /* ID codes.  */
@@ -1408,6 +1427,7 @@ void HELPER(set_cp15)(CPUState *env, uint32_t insn, uint32_t val)
         break;
     case 2: /* MMU Page table control / MPU cache control.  */
         if (arm_feature(env, ARM_FEATURE_MPU)) {
+		DPRINTF("cp15: TTBR case1\n");
             switch (op2) {
             case 0:
                 env->cp15.c2_data = val;
@@ -1419,6 +1439,7 @@ void HELPER(set_cp15)(CPUState *env, uint32_t insn, uint32_t val)
                 goto bad_reg;
             }
         } else {
+		DPRINTF("cp15: TTBR case2\n");
 	    switch (op2) {
 	    case 0:
 		env->cp15.c2_base0 = val;
@@ -1678,6 +1699,8 @@ uint32_t HELPER(get_cp15)(CPUState *env, uint32_t insn)
     op1 = (insn >> 21) & 7;
     op2 = (insn >> 5) & 7;
     crm = insn & 0xf;
+    DPRINTF("cp15 register read (c%d, c%d, {%d, %d})\n",
+              (insn >> 16) & 0xf, crm, op1, op2);
     switch ((insn >> 16) & 0xf) {
     case 0: /* ID codes.  */
         switch (op1) {
