@@ -126,6 +126,13 @@ static uint32_t tegra_clocks_read(void *opaque, target_phys_addr_t offset)
     case 0x5c /* CLK_RST_CONTROLLER_OSC_FREQ_DET_STATUS */:
         /* emulate 12Mhz crystal */
         return 732 * ((s->regs[0x58 / 4] & 0xf) + 1) / 2;
+    case 0x80:
+    case 0x90:
+    case 0xa0:
+    case 0xb0:
+    case 0xc0:
+	s->regs[offset/sizeof(uint32_t)] |= 0x08000000; // set LOCKED
+	// fall-through
     default:
         return s->regs[offset/sizeof(uint32_t)];
     }
