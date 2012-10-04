@@ -534,7 +534,7 @@ SDState *sd_init(BlockDriverState *bs, int is_spi)
     sd = (SDState *) qemu_mallocz(sizeof(SDState));
     sd->buf = qemu_blockalign(bs, 512);
     sd->spi = is_spi;
-    sd->emmc = !bdrv_is_removable(bs);
+    sd->emmc = 0; // TODO!bdrv_is_removable(bs);
     sd->enable = 1;
     sd_reset(sd, bs);
     if (sd->bdrv) {
