@@ -268,6 +268,9 @@ static uint32_t gic_dist_readb(void *opaque, target_phys_addr_t offset)
         if (offset < 0x08)
             return 0;
 #endif
+	//TODO HACK
+	DPRINTF("Read access to GIC at offset: %d\n", offset);	
+	return 0;
         goto bad_reg;
     } else if (offset < 0x200) {
         /* Interrupt Set/Clear Enable.  */
