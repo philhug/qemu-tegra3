@@ -155,7 +155,8 @@ static void tegra_i2c_xfer_done(tegra_i2c_state *s)
     s->state = I2C_HEADER0;
     if (s->header_specific & I2C_HEADER_IE_ENABLE) {
         tegra_i2c_update(s, I2C_INT_PACKET_XFER_COMPLETE |
-                            I2C_INT_ALL_PACKETS_XFER_COMPLETE, 1);
+                            I2C_INT_ALL_PACKETS_XFER_COMPLETE |
+			    I2C_INT_TX_FIFO_DATA_REQ, 1);
     }
 }
 
