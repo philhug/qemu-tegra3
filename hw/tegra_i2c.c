@@ -139,17 +139,20 @@ static void tegra_i2c_update(tegra_i2c_state *s, uint32_t it_bit,
         ((s->header_specific & I2C_HEADER_IE_ENABLE) ? 0x80 : 0);
 
     s->int_status = (s->int_status & ~it_bit) | (value ? it_bit : 0);
-    DPRINTF("update %x/%x\n", s->int_status, real_mask);
+    DPRINTF("update %x/%x it_bit: %x value: %x\n", s->int_status, real_mask, it_bit, value);
 
     if (s->int_status & real_mask) {
+DPRINTF("raise \n");
         qemu_irq_raise(s->irq);
     } else {
+DPRINTF("lower \n");
         qemu_irq_lower(s->irq);
     }
 }
 
 static void tegra_i2c_xfer_done(tegra_i2c_state *s)
 {
+    DPRINTF("transfer complete\n");
     i2c_end_transfer(s->bus);
     s->packet_transfer_status |= (1<<24) /* transfer complete */;
     s->state = I2C_HEADER0;
@@ -201,8 +204,8 @@ static void tegra_i2c_xfer_packet(tegra_i2c_state *s, uint32_t value)
         ret = i2c_start_transfer(s->bus,
                                  (value >> I2C_HEADER_SLAVE_ADDR_SHIFT) & 0x7f,
                                  value & I2C_HEADER_READ);
-        DPRINTF("#### I2C start at %02x => %d\n",
-                (value >> I2C_HEADER_SLAVE_ADDR_SHIFT) & 0x7f, ret);
+        DPRINTF("#### I2C start at %02x => %d  read:%d\n",
+                (value >> I2C_HEADER_SLAVE_ADDR_SHIFT) & 0x7f, ret, value & I2C_HEADER_READ);
         if (ret) { /* invalid address */
             tegra_i2c_update(s, I2C_INT_NO_ACK, 1);
         }
