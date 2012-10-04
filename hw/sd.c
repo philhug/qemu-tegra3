@@ -1366,7 +1366,7 @@ static sd_rsp_type_t sd_app_command(SDState *sd,
             sd->state = sd_sendingdata_state;
             sd->data_start = 0;
             sd->data_offset = 0;
-            return sd_r1;
+            return sd_r2_s;
 
         default:
             break;
