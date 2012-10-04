@@ -32,7 +32,7 @@ do { fprintf(stderr, "tegra_clocks: " fmt , ## __VA_ARGS__); } while (0)
 
 typedef struct {
     SysBusDevice busdev;
-    uint32_t regs[212];
+    uint32_t regs[304];
 } tegra_clocks_state;
 
 const uint32_t tegra_default_clocks_regs[] = {
@@ -89,6 +89,29 @@ const uint32_t tegra_default_clocks_regs[] = {
     /* 0x320 */ 0x80000130, 0x80000130, 0x00000400, 0x00000400,
     /* 0x330 */ 0x07f00a00, 0x07f00a00, 0x00000000, 0x00000000,
     /* 0x340 */ 0x00002222, 0x00002222, 0x00000000, 0x00000000,
+    /* 0x350 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x360 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x370 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x380 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x390 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x3a0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x3b0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x3c0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x3d0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x3e0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x3f0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x400 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x410 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x420 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x430 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x440 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x450 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x460 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x470 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x480 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x490 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x4a0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
+    /* 0x4b0 */ 0x00000000, 0x00000000, 0x00000000, 0x00000000, //UNKNOWN
 };
 
 static uint32_t tegra_clocks_read(void *opaque, target_phys_addr_t offset)
@@ -170,7 +193,7 @@ static const VMStateDescription tegra_clocks_vmstate = {
     .minimum_version_id = 1,
     .minimum_version_id_old = 1,
     .fields      = (VMStateField[]) {
-        VMSTATE_UINT32_ARRAY(regs, tegra_clocks_state, 212),
+        VMSTATE_UINT32_ARRAY(regs, tegra_clocks_state, 304),
         VMSTATE_END_OF_LIST()
     }
 };
