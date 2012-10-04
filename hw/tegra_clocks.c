@@ -120,7 +120,7 @@ static uint32_t tegra_clocks_read(void *opaque, target_phys_addr_t offset)
     DPRINTF("READ at 0x%x\n", offset);
 
     if (offset > sizeof(s->regs)) {
-        hw_error("tegra_clocks_read: Bad offset %x\n", (int)offset);
+        //hw_error("tegra_clocks_read: Bad offset %x\n", (int)offset);
     }
     switch (offset) {
     case 0x5c /* CLK_RST_CONTROLLER_OSC_FREQ_DET_STATUS */:
