@@ -31,6 +31,7 @@ do { fprintf(stderr, "tegra_spi: " fmt , ## __VA_ARGS__); } while (0)
 #endif
 
 /* status Clear-On-Write bits */
+//#define SFLASH_STAT_COW 0x4C000000
 #define SFLASH_STAT_COW 0x4C000000
 /* status Read Only bits */
 #define SFLASH_STAT_RO  0x83C00000
@@ -55,6 +56,9 @@ static uint32_t tegra_sflash_read(void *opaque, target_phys_addr_t offset)
     case 0x04: /* SPI_STATUS */
         return s->status;
     case 0x08: /* SPI_RX_CMP */
+    	s->rx_cmp |= 0x00800000; // RX_EMPTY
+    	s->rx_cmp |= 0x00200000; // TX_EMPTY
+    	s->rx_cmp |= 0x40000000; // RDY
         return s->rx_cmp;
     case 0x0c: /* SPI_DMA_CTL */
         return s->dma_ctl;
