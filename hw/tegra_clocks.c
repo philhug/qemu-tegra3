@@ -154,8 +154,12 @@ static void tegra_clocks_write(void *opaque, target_phys_addr_t offset,
         /* bit 8 : CPU0 ON  bit 9 : CPU1: ON */
         qemu_get_cpu(0)->halted = value&0x100;
         qemu_get_cpu(1)->halted = value&0x200;
+        qemu_get_cpu(2)->halted = value&0x400;
+        qemu_get_cpu(3)->halted = value&0x800;
         /* allow secondary CPU to run */
         qemu_cpu_kick(qemu_get_cpu(1));
+        qemu_cpu_kick(qemu_get_cpu(2));
+        qemu_cpu_kick(qemu_get_cpu(3));
         break;
     default:
         s->regs[offset/sizeof(uint32_t)] = value;
