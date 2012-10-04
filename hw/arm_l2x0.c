@@ -25,7 +25,6 @@
 
 typedef struct l2x0_state {
     SysBusDevice busdev;
-    MemoryRegion iomem;
     uint32_t cache_type;
     uint32_t ctrl;
     uint32_t aux_ctrl;
@@ -50,9 +49,7 @@ static const VMStateDescription vmstate_l2x0 = {
     }
 };
 
-
-static uint64_t l2x0_priv_read(void *opaque, target_phys_addr_t offset,
-                               unsigned size)
+static uint32_t l2x0_priv_read(void *opaque, target_phys_addr_t offset)
 {
     uint32_t cache_data;
     l2x0_state *s = (l2x0_state *)opaque;
@@ -94,7 +91,7 @@ static uint64_t l2x0_priv_read(void *opaque, target_phys_addr_t offset,
 }
 
 static void l2x0_priv_write(void *opaque, target_phys_addr_t offset,
-                            uint64_t value, unsigned size)
+                            uint32_t value)
 {
     l2x0_state *s = (l2x0_state *)opaque;
     offset &= 0xfff;
@@ -145,18 +142,27 @@ static void l2x0_priv_reset(DeviceState *dev)
     s->filter_end = 0;
 }
 
-static const MemoryRegionOps l2x0_mem_ops = {
-    .read = l2x0_priv_read,
-    .write = l2x0_priv_write,
-    .endianness = DEVICE_NATIVE_ENDIAN,
- };
+static CPUReadMemoryFunc * const tegra_l2x0_readfn[] = {
+   l2x0_priv_read,
+   l2x0_priv_read,
+   l2x0_priv_read
+};
+
+static CPUWriteMemoryFunc * const tegra_l2x0_writefn[] = {
+   l2x0_priv_write,
+   l2x0_priv_write,
+   l2x0_priv_write
+};
 
 static int l2x0_priv_init(SysBusDevice *dev)
 {
+    int iomemtype;
     l2x0_state *s = FROM_SYSBUS(l2x0_state, dev);
 
-    memory_region_init_io(&s->iomem, &l2x0_mem_ops, s, "l2x0_cc", 0x1000);
-    sysbus_init_mmio(dev, &s->iomem);
+    iomemtype = cpu_register_io_memory(tegra_l2x0_readfn,
+                                       tegra_l2x0_writefn, s,
+                                       DEVICE_NATIVE_ENDIAN);
+    sysbus_init_mmio(dev, 0x1000, iomemtype);
     return 0;
 }
 
