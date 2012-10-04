@@ -792,6 +792,7 @@ static sd_rsp_type_t sd_normal_command(SDState *sd,
         break;
 
     case 7:	/* CMD7:   SELECT/DESELECT_CARD */
+DPRINTF ("CMD7 state: %i\n", sd->state);
         if (sd->spi)
             goto bad_cmd;
         switch (sd->state) {
