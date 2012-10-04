@@ -134,6 +134,7 @@ static uint32_t tegra_clocks_read(void *opaque, target_phys_addr_t offset)
 	s->regs[offset/sizeof(uint32_t)] |= 0x08000000; // set LOCKED
 	// fall-through
     default:
+	DPRINTF("READ at 0x%x returned 0x%x\n", offset, s->regs[offset/sizeof(uint32_t)]);
         return s->regs[offset/sizeof(uint32_t)];
     }
 
