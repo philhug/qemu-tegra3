@@ -320,12 +320,16 @@ static void sdhci_command(sdhci_state *s, uint32_t cmd)
         if (/*(cmd & SDHCI_CMD_INDEX) &&*/ (cmd & SDHCI_CMD_RESP_MASK)) {
             /* no response expected */
             s->int_status |= SDHCI_INT_INDEX;
+            s->int_status |= SDHCI_INT_RESPONSE;
+            s->int_status |= SDHCI_INT_DATA_END;
         } else {
             /* error */
             s->int_status |= SDHCI_INT_RESPONSE;
+            s->int_status |= SDHCI_INT_DATA_END;
         }
     } else {
         s->int_status |= SDHCI_INT_RESPONSE;
+            s->int_status |= SDHCI_INT_DATA_END;
         if ((cmd & 3) == SDHCI_CMD_RESP_SHORT_BUSY) {
             /* the command will trigger the busy (DAT[0]) line ON then OFF
              * this will raise the Data END interrupt when done.
