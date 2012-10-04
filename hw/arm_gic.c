@@ -139,6 +139,7 @@ static void gic_update(gic_state *s)
         if (best_prio <= s->priority_mask[cpu]) {
             s->current_pending[cpu] = best_irq;
             if (best_prio < s->running_priority[cpu]) {
+if (best_irq !=32) 
                 DPRINTF("Raised pending IRQ %d\n", best_irq);
                 level = 1;
             }
@@ -155,6 +156,7 @@ gic_set_pending_private(gic_state *s, int cpu, int irq)
     if (GIC_TEST_PENDING(irq, cm))
         return;
 
+if (irq !=32) 
     DPRINTF("Set %d pending cpu %d\n", irq, cpu);
     GIC_SET_PENDING(irq, cm);
     gic_update(s);
@@ -172,6 +174,7 @@ static void gic_set_irq(void *opaque, int irq, int level)
     if (level) {
         GIC_SET_LEVEL(irq, ALL_CPU_MASK);
         if (GIC_TEST_TRIGGER(irq) || GIC_TEST_ENABLED(irq)) {
+if (irq !=32) 
             DPRINTF("Set %d pending mask %x\n", irq, GIC_TARGET(irq));
             GIC_SET_PENDING(irq, GIC_TARGET(irq));
         }
@@ -207,6 +210,7 @@ static uint32_t gic_acknowledge_irq(gic_state *s, int cpu)
        Level triggered IRQs will be reasserted once they become inactive.  */
     GIC_CLEAR_PENDING(new_irq, GIC_TEST_MODEL(new_irq) ? ALL_CPU_MASK : cm);
     gic_set_running_irq(s, cpu, new_irq);
+if (new_irq !=32) 
     DPRINTF("ACK %d\n", new_irq);
     return new_irq;
 }
@@ -215,6 +219,7 @@ static void gic_complete_irq(gic_state * s, int cpu, int irq)
 {
     int update = 0;
     int cm = 1 << cpu;
+if (irq !=32) 
     DPRINTF("EOI %d\n", irq);
     if (s->running_irq[cpu] == 1023)
         return; /* No active IRQ.  */
@@ -223,6 +228,7 @@ static void gic_complete_irq(gic_state * s, int cpu, int irq)
            raised.  */
         if (!GIC_TEST_TRIGGER(irq) && GIC_TEST_ENABLED(irq)
                 && GIC_TEST_LEVEL(irq, cm) && (GIC_TARGET(irq) & cm) != 0) {
+if (irq !=32) 
             DPRINTF("Set %d pending mask %x\n", irq, cm);
             GIC_SET_PENDING(irq, cm);
             update = 1;
@@ -416,12 +422,14 @@ static void gic_dist_writeb(void *opaque, target_phys_addr_t offset,
             if (value & (1 << i)) {
                 int mask = (irq < 32) ? (1 << cpu) : GIC_TARGET(irq);
                 if (!GIC_TEST_ENABLED(irq + i))
+if (irq !=32) 
                     DPRINTF("Enabled IRQ %d\n", irq + i);
                 GIC_SET_ENABLED(irq + i);
                 /* If a raised level triggered IRQ enabled then mark
                    is as pending.  */
                 if (GIC_TEST_LEVEL(irq + i, mask)
                         && !GIC_TEST_TRIGGER(irq + i)) {
+if (irq !=32) 
                     DPRINTF("Set %d pending mask %x\n", irq + i, mask);
                     GIC_SET_PENDING(irq + i, mask);
                 }
@@ -437,6 +445,7 @@ static void gic_dist_writeb(void *opaque, target_phys_addr_t offset,
         for (i = 0; i < 8; i++) {
             if (value & (1 << i)) {
                 if (GIC_TEST_ENABLED(irq + i))
+if (irq !=32) 
                     DPRINTF("Disabled IRQ %d\n", irq + i);
                 GIC_CLEAR_ENABLED(irq + i);
             }
