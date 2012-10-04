@@ -379,7 +379,7 @@ static uint32_t sdhci_read(void *opaque, target_phys_addr_t offset, int size)
                (s->response[14]<<8) | s->response[15];
     case SDHCI_BUFFER:
     case SDHCI_PRESENT_STATE:
-        return s->sd ? 0x00070000 : 0;
+        return s->sd ? 0x00170000 : 0;
     case SDHCI_HOST_CONTROL:
         return s->host_control;
     case SDHCI_POWER_CONTROL:
