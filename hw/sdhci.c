@@ -479,9 +479,9 @@ static void sdhci_write(void *opaque, target_phys_addr_t offset,
         sdhci_set_irq(s);
         break;
     case SDHCI_INT_ENABLE:
-        s->int_enable = value;
+        s->int_enable = value & 0xffff;
         sdhci_set_irq(s);
-        break;
+	break;
     case SDHCI_SIGNAL_ENABLE:
         break;
     case SDHCI_ACMD12_ERR:
